@@ -4,7 +4,25 @@ from statistics import median
 import os
 from app.pipeline.logger import get_logger
 log = get_logger("extract")
-nlp = spacy.load("en_core_web_sm")
+
+
+def _load_nlp():
+    model_name = str(os.getenv("SPACY_MODEL", "en_core_web_sm")).strip() or "en_core_web_sm"
+    try:
+        return spacy.load(model_name)
+    except Exception as err:
+        log.warning(
+            "spaCy model unavailable; using lightweight sentencizer fallback | model=%s | err=%s",
+            model_name,
+            err,
+        )
+        nlp_fallback = spacy.blank("en")
+        if "sentencizer" not in nlp_fallback.pipe_names:
+            nlp_fallback.add_pipe("sentencizer")
+        return nlp_fallback
+
+
+nlp = _load_nlp()
 
 def extract_blocks_from_pdfs(pdf_paths, pdf_metadata=None):
     blocks = []
@@ -68,6 +86,9 @@ def sentence_stats(blocks):
         doc = nlp(b["text"])
         for s in doc.sents:
             lengths.append(len(s.text.split()))
+    if not lengths:
+        # Safe defaults keep downstream chunking stable when sentence parsing is empty.
+        return {"median_sent_len": 12, "p75": 16, "p90": 20}
     return {
         "median_sent_len": median(lengths),
         "p75": sorted(lengths)[int(0.75 * len(lengths))],

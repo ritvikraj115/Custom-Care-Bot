@@ -1,5 +1,6 @@
 import spacy
 import numpy as np
+import os
 from collections import defaultdict
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
@@ -12,7 +13,25 @@ log = get_logger("chunk")
 # Models
 # --------------------------------------------------
 
-nlp = spacy.load("en_core_web_sm")
+
+
+def _load_nlp():
+    model_name = str(os.getenv("SPACY_MODEL", "en_core_web_sm")).strip() or "en_core_web_sm"
+    try:
+        return spacy.load(model_name)
+    except Exception as err:
+        log.warning(
+            "spaCy model unavailable; using lightweight sentencizer fallback | model=%s | err=%s",
+            model_name,
+            err,
+        )
+        nlp_fallback = spacy.blank("en")
+        if "sentencizer" not in nlp_fallback.pipe_names:
+            nlp_fallback.add_pipe("sentencizer")
+        return nlp_fallback
+
+
+nlp = _load_nlp()
 embedder = SentenceTransformer("all-MiniLM-L6-v2")
 
 # --------------------------------------------------
