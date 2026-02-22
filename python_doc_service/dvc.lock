@@ -1,0 +1,79 @@
+schema: '2.0'
+stages:
+  autocomplete_track:
+    cmd: python scripts/dvc/track_autocomplete_artifacts.py --client-id 
+      6975c355237567cfc9509394 --bot-id 699973474726fe48b51fbcd0 --summary-out 
+      storage/dvc_runs/client_6975c355237567cfc9509394/bot_699973474726fe48b51fbcd0/autocomplete_tracking.json
+    deps:
+    - path: app/autocomplete_training_pipeline.py
+      hash: md5
+      md5: d5baad11737c9c9003c537ee6004e23f
+      size: 76521
+    - path: scripts/dvc/track_autocomplete_artifacts.py
+      hash: md5
+      md5: bbd31e842ccf008a9f8190523c58dff7
+      size: 2914
+    params:
+      params.yaml:
+        dvc.bot_id: 699973474726fe48b51fbcd0
+        dvc.client_id: 6975c355237567cfc9509394
+    outs:
+    - path: 
+        storage/autocomplete/client_6975c355237567cfc9509394/bot_699973474726fe48b51fbcd0
+      hash: md5
+      md5: 6b91d6976374726bb988bcb1f305737a.dir
+      size: 8846185
+      nfiles: 7
+    - path: 
+        storage/dvc_runs/client_6975c355237567cfc9509394/bot_699973474726fe48b51fbcd0/autocomplete_tracking.json
+      hash: md5
+      md5: d84a808da69f24572eb02856f1ce14b2
+      size: 2778
+  cluster_train:
+    cmd: python scripts/dvc/run_cluster_train.py --client-id 
+      6975c355237567cfc9509394 --bot-id 699973474726fe48b51fbcd0 --rebuild-mode 
+      incremental --pdf-manifest 
+      data/dvc/runtime/manifests/client_6975c355237567cfc9509394/bot_699973474726fe48b51fbcd0/latest_pdf_manifest.json
+      --summary-out 
+      storage/dvc_runs/client_6975c355237567cfc9509394/bot_699973474726fe48b51fbcd0/clustering_summary.json
+    deps:
+    - path: app/pipeline/clustering_pipeline.py
+      hash: md5
+      md5: 69f9c14b96fc82e83bd1936f0ec18450
+      size: 2460
+    - path: app/pipeline/hierarchical_index.py
+      hash: md5
+      md5: 4d3b1d857d2d250cc1a5500f920bc838
+      size: 17789
+    - path: app/pipeline/run_pipeline.py
+      hash: md5
+      md5: 6a6acf26b264542a486fcc5e24410093
+      size: 18874
+    - path: 
+        data/dvc/runtime/manifests/client_6975c355237567cfc9509394/bot_699973474726fe48b51fbcd0/latest_pdf_manifest.json
+      hash: md5
+      md5: 5fd5a2d0590bebb1b72be12a61b4085d
+      size: 335
+    - path: scripts/dvc/run_cluster_train.py
+      hash: md5
+      md5: 78b8b439868deebf049db43a720cd2f7
+      size: 4598
+    params:
+      params.yaml:
+        dvc.bot_id: 699973474726fe48b51fbcd0
+        dvc.client_id: 6975c355237567cfc9509394
+        dvc.pdf_manifest: 
+          data/dvc/runtime/manifests/client_6975c355237567cfc9509394/bot_699973474726fe48b51fbcd0/latest_pdf_manifest.json
+        dvc.rebuild_mode: incremental
+    outs:
+    - path: 
+        storage/dvc_runs/client_6975c355237567cfc9509394/bot_699973474726fe48b51fbcd0/clustering_summary.json
+      hash: md5
+      md5: d556cbe478d2db8ec82e1acd2c37d80c
+      size: 4304
+    - path: 
+        storage/indexes/client_6975c355237567cfc9509394/bot_699973474726fe48b51fbcd0
+      hash: md5
+      md5: ed42487cd0624b335864daae783b2377.dir
+      size: 64484
+      nfiles: 14

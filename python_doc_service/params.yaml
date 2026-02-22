@@ -1,0 +1,5 @@
+dvc:
+  client_id: 6975c355237567cfc9509394
+  bot_id: 699973474726fe48b51fbcd0
+  rebuild_mode: incremental
+  pdf_manifest: data/dvc/runtime/manifests/client_6975c355237567cfc9509394/bot_699973474726fe48b51fbcd0/latest_pdf_manifest.json

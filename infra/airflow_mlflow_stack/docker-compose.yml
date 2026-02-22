@@ -1,0 +1,136 @@
+name: airflow-mlflow-stack
+
+x-airflow-common-env: &airflow-common-env
+  AIRFLOW__CORE__EXECUTOR: LocalExecutor
+  AIRFLOW__CORE__AUTH_MANAGER: airflow.providers.fab.auth_manager.fab_auth_manager.FabAuthManager
+  AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${AIRFLOW_DB_USER}:${AIRFLOW_DB_PASSWORD}@postgres:5432/${AIRFLOW_DB_NAME}
+  AIRFLOW__CORE__FERNET_KEY: ${AIRFLOW_FERNET_KEY}
+  AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+  AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: "true"
+  AIRFLOW__CORE__EXECUTION_API_SERVER_URL: http://airflow-apiserver:8080/execution/
+  AIRFLOW_ML_CLIENT_ID: ${AIRFLOW_ML_CLIENT_ID}
+  AIRFLOW_ML_BOT_ID: ${AIRFLOW_ML_BOT_ID}
+  AIRFLOW_ML_SERVICE_URL: ${AIRFLOW_ML_SERVICE_URL}
+  AIRFLOW_HDBSCAN_REBUILD_MODE: ${AIRFLOW_HDBSCAN_REBUILD_MODE}
+  AIRFLOW_HDBSCAN_PDF_MANIFEST: ${AIRFLOW_HDBSCAN_PDF_MANIFEST}
+  AIRFLOW_DEPLOY_CMD: ${AIRFLOW_DEPLOY_CMD}
+
+x-airflow-common: &airflow-common
+  image: apache/airflow:3.1.7
+  environment:
+    <<: *airflow-common-env
+  user: "${AIRFLOW_UID:-50000}:0"
+  volumes:
+    - ../../python_doc_service/airflow/dags:/opt/airflow/dags
+    - ./airflow/logs:/opt/airflow/logs
+    - ./airflow/plugins:/opt/airflow/plugins
+  depends_on:
+    postgres:
+      condition: service_healthy
+
+services:
+  postgres:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_SUPERUSER}
+      POSTGRES_PASSWORD: ${POSTGRES_SUPERPASSWORD}
+      POSTGRES_DB: ${POSTGRES_SUPERDB}
+    ports:
+      - "${POSTGRES_PORT:-5433}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./postgres/init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_SUPERUSER} -d ${POSTGRES_SUPERDB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+  airflow-init:
+    <<: *airflow-common
+    command:
+      - bash
+      - -lc
+      - |
+        airflow db migrate
+        airflow users create \
+          --username "${AIRFLOW_ADMIN_USERNAME}" \
+          --firstname "Admin" \
+          --lastname "User" \
+          --role "Admin" \
+          --email "${AIRFLOW_ADMIN_EMAIL}" \
+          --password "${AIRFLOW_ADMIN_PASSWORD}" || true
+    restart: "no"
+
+  airflow-apiserver:
+    <<: *airflow-common
+    command: api-server
+    restart: unless-stopped
+    ports:
+      - "${AIRFLOW_WEB_PORT:-8081}:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      airflow-init:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:8080/api/v2/version"]
+      interval: 20s
+      timeout: 10s
+      retries: 8
+      start_period: 30s
+
+  airflow-scheduler:
+    <<: *airflow-common
+    command: scheduler
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      airflow-init:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:8974/health"]
+      interval: 20s
+      timeout: 10s
+      retries: 8
+      start_period: 30s
+
+  airflow-dag-processor:
+    <<: *airflow-common
+    command: dag-processor
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      airflow-init:
+        condition: service_completed_successfully
+
+  mlflow:
+    build:
+      context: ./mlflow
+    restart: unless-stopped
+    environment:
+      MLFLOW_DB_USER: ${MLFLOW_DB_USER}
+      MLFLOW_DB_PASSWORD: ${MLFLOW_DB_PASSWORD}
+      MLFLOW_DB_NAME: ${MLFLOW_DB_NAME}
+      MLFLOW_S3_BUCKET: ${MLFLOW_S3_BUCKET}
+      AWS_DEFAULT_REGION: ${AWS_DEFAULT_REGION}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+    ports:
+      - "${MLFLOW_PORT:-5001}:5000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:5000/health"]
+      interval: 20s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
+
+volumes:
+  postgres_data:

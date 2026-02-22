@@ -1,0 +1,61 @@
+{
+  "generated_at": "2026-02-21T07:04:46.373421+00:00",
+  "client_id": "6975c355237567cfc9509394",
+  "bot_id": "69995713d2168010a5aef21f",
+  "safe_client_id": "6975c355237567cfc9509394",
+  "safe_bot_id": "69995713d2168010a5aef21f",
+  "bot_dir": "C:\\Users\\ritvi\\Downloads\\adv_project\\python_doc_service\\storage\\autocomplete\\client_6975c355237567cfc9509394\\bot_69995713d2168010a5aef21f",
+  "state": {
+    "total_questions": 0,
+    "total_seed_questions": 150,
+    "total_corpus_questions": 150,
+    "bootstrap_completed": true,
+    "last_trained_count": 0,
+    "last_trained_user_count": 0,
+    "last_trained_corpus_count": 150,
+    "model_version": 1,
+    "is_training": false,
+    "last_trained_at": "2026-02-21T07:01:52.479678+00:00",
+    "last_training_seconds": 74.425,
+    "last_error": null,
+    "updated_at": "2026-02-21T07:01:52.479678+00:00"
+  },
+  "artifacts": {
+    "model": {
+      "path": "C:\\Users\\ritvi\\Downloads\\adv_project\\python_doc_service\\storage\\autocomplete\\client_6975c355237567cfc9509394\\bot_69995713d2168010a5aef21f\\model.keras",
+      "exists": true,
+      "size_bytes": 4333354,
+      "mtime": "2026-02-21T07:01:52.347821+00:00"
+    },
+    "weights": {
+      "path": "C:\\Users\\ritvi\\Downloads\\adv_project\\python_doc_service\\storage\\autocomplete\\client_6975c355237567cfc9509394\\bot_69995713d2168010a5aef21f\\model.weights.h5",
+      "exists": true,
+      "size_bytes": 4237840,
+      "mtime": "2026-02-21T07:01:52.454495+00:00"
+    },
+    "tokenizer_model": {
+      "path": "C:\\Users\\ritvi\\Downloads\\adv_project\\python_doc_service\\storage\\autocomplete\\client_6975c355237567cfc9509394\\bot_69995713d2168010a5aef21f\\tokenizer.model",
+      "exists": true,
+      "size_bytes": 241248,
+      "mtime": "2026-02-21T07:00:38.234422+00:00"
+    },
+    "tokenizer_vocab": {
+      "path": "C:\\Users\\ritvi\\Downloads\\adv_project\\python_doc_service\\storage\\autocomplete\\client_6975c355237567cfc9509394\\bot_69995713d2168010a5aef21f\\tokenizer.vocab",
+      "exists": true,
+      "size_bytes": 3887,
+      "mtime": "2026-02-21T07:00:38.241540+00:00"
+    },
+    "questions": {
+      "path": "C:\\Users\\ritvi\\Downloads\\adv_project\\python_doc_service\\storage\\autocomplete\\client_6975c355237567cfc9509394\\bot_69995713d2168010a5aef21f\\questions.jsonl",
+      "exists": true,
+      "size_bytes": 16582,
+      "mtime": "2026-02-21T07:00:36.923934+00:00"
+    },
+    "state": {
+      "path": "C:\\Users\\ritvi\\Downloads\\adv_project\\python_doc_service\\storage\\autocomplete\\client_6975c355237567cfc9509394\\bot_69995713d2168010a5aef21f\\state.json",
+      "exists": true,
+      "size_bytes": 442,
+      "mtime": "2026-02-21T07:01:52.479679+00:00"
+    }
+  }
+}

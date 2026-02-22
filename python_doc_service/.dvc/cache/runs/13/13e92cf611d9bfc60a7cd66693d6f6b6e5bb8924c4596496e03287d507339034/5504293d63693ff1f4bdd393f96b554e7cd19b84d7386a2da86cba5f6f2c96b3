@@ -1,0 +1,47 @@
+cmd: python scripts/dvc/run_cluster_train.py --client-id 
+  6975c355237567cfc9509394 --bot-id 699973474726fe48b51fbcd0 --rebuild-mode 
+  incremental --pdf-manifest 
+  data/dvc/runtime/manifests/client_6975c355237567cfc9509394/bot_699973474726fe48b51fbcd0/latest_pdf_manifest.json
+  --summary-out 
+  storage/dvc_runs/client_6975c355237567cfc9509394/bot_699973474726fe48b51fbcd0/clustering_summary.json
+deps:
+- path: app/pipeline/clustering_pipeline.py
+  hash: md5
+  md5: 69f9c14b96fc82e83bd1936f0ec18450
+  size: 2460
+- path: app/pipeline/hierarchical_index.py
+  hash: md5
+  md5: 4d3b1d857d2d250cc1a5500f920bc838
+  size: 17789
+- path: app/pipeline/run_pipeline.py
+  hash: md5
+  md5: 6a6acf26b264542a486fcc5e24410093
+  size: 18874
+- path: 
+    data/dvc/runtime/manifests/client_6975c355237567cfc9509394/bot_699973474726fe48b51fbcd0/latest_pdf_manifest.json
+  hash: md5
+  md5: cc3f44ee352f562eaaba13e9b1429bea
+  size: 331
+- path: scripts/dvc/run_cluster_train.py
+  hash: md5
+  md5: 78b8b439868deebf049db43a720cd2f7
+  size: 4598
+params:
+  params.yaml:
+    dvc.bot_id: 699973474726fe48b51fbcd0
+    dvc.client_id: 6975c355237567cfc9509394
+    dvc.pdf_manifest: 
+      data/dvc/runtime/manifests/client_6975c355237567cfc9509394/bot_699973474726fe48b51fbcd0/latest_pdf_manifest.json
+    dvc.rebuild_mode: incremental
+outs:
+- path: 
+    storage/dvc_runs/client_6975c355237567cfc9509394/bot_699973474726fe48b51fbcd0/clustering_summary.json
+  hash: md5
+  md5: 2a659394b27c9616ede065108d96a569
+  size: 2861
+- path: 
+    storage/indexes/client_6975c355237567cfc9509394/bot_699973474726fe48b51fbcd0
+  hash: md5
+  md5: e127303e6d3af6dceeb7f121c797d62a.dir
+  size: 28215
+  nfiles: 10

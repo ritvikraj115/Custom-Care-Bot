@@ -1,0 +1,6 @@
+[core]
+    no_scm = True
+    remote = prod
+['remote "prod"']
+    url = s3://dvc-customcare/adv_project/dvc
+    region = us-west-2

@@ -1,0 +1,84 @@
+﻿services:
+  airflow-apiserver:
+    volumes:
+      - ../python_doc_service:/opt/airflow/python_doc_service
+    environment:
+      AIRFLOW__CORE__DAGS_FOLDER: /opt/airflow/python_doc_service/airflow/dags
+      AIRFLOW_ML_CLIENT_ID: ${AIRFLOW_ML_CLIENT_ID}
+      AIRFLOW_ML_BOT_ID: ${AIRFLOW_ML_BOT_ID}
+      AIRFLOW_ML_SERVICE_URL: ${AIRFLOW_ML_SERVICE_URL}
+      AIRFLOW_HDBSCAN_REBUILD_MODE: ${AIRFLOW_HDBSCAN_REBUILD_MODE}
+      AIRFLOW_HDBSCAN_PDF_MANIFEST: ${AIRFLOW_HDBSCAN_PDF_MANIFEST}
+      AIRFLOW_DEPLOY_CMD: ${AIRFLOW_DEPLOY_CMD}
+
+  airflow-scheduler:
+    volumes:
+      - ../python_doc_service:/opt/airflow/python_doc_service
+    environment:
+      AIRFLOW__CORE__DAGS_FOLDER: /opt/airflow/python_doc_service/airflow/dags
+      AIRFLOW_ML_CLIENT_ID: ${AIRFLOW_ML_CLIENT_ID}
+      AIRFLOW_ML_BOT_ID: ${AIRFLOW_ML_BOT_ID}
+      AIRFLOW_ML_SERVICE_URL: ${AIRFLOW_ML_SERVICE_URL}
+      AIRFLOW_HDBSCAN_REBUILD_MODE: ${AIRFLOW_HDBSCAN_REBUILD_MODE}
+      AIRFLOW_HDBSCAN_PDF_MANIFEST: ${AIRFLOW_HDBSCAN_PDF_MANIFEST}
+      AIRFLOW_DEPLOY_CMD: ${AIRFLOW_DEPLOY_CMD}
+
+  airflow-dag-processor:
+    volumes:
+      - ../python_doc_service:/opt/airflow/python_doc_service
+    environment:
+      AIRFLOW__CORE__DAGS_FOLDER: /opt/airflow/python_doc_service/airflow/dags
+      AIRFLOW_ML_CLIENT_ID: ${AIRFLOW_ML_CLIENT_ID}
+      AIRFLOW_ML_BOT_ID: ${AIRFLOW_ML_BOT_ID}
+      AIRFLOW_ML_SERVICE_URL: ${AIRFLOW_ML_SERVICE_URL}
+      AIRFLOW_HDBSCAN_REBUILD_MODE: ${AIRFLOW_HDBSCAN_REBUILD_MODE}
+      AIRFLOW_HDBSCAN_PDF_MANIFEST: ${AIRFLOW_HDBSCAN_PDF_MANIFEST}
+      AIRFLOW_DEPLOY_CMD: ${AIRFLOW_DEPLOY_CMD}
+
+  airflow-worker:
+    volumes:
+      - ../python_doc_service:/opt/airflow/python_doc_service
+    environment:
+      AIRFLOW__CORE__DAGS_FOLDER: /opt/airflow/python_doc_service/airflow/dags
+      AIRFLOW_ML_CLIENT_ID: ${AIRFLOW_ML_CLIENT_ID}
+      AIRFLOW_ML_BOT_ID: ${AIRFLOW_ML_BOT_ID}
+      AIRFLOW_ML_SERVICE_URL: ${AIRFLOW_ML_SERVICE_URL}
+      AIRFLOW_HDBSCAN_REBUILD_MODE: ${AIRFLOW_HDBSCAN_REBUILD_MODE}
+      AIRFLOW_HDBSCAN_PDF_MANIFEST: ${AIRFLOW_HDBSCAN_PDF_MANIFEST}
+      AIRFLOW_DEPLOY_CMD: ${AIRFLOW_DEPLOY_CMD}
+
+  airflow-triggerer:
+    volumes:
+      - ../python_doc_service:/opt/airflow/python_doc_service
+    environment:
+      AIRFLOW__CORE__DAGS_FOLDER: /opt/airflow/python_doc_service/airflow/dags
+      AIRFLOW_ML_CLIENT_ID: ${AIRFLOW_ML_CLIENT_ID}
+      AIRFLOW_ML_BOT_ID: ${AIRFLOW_ML_BOT_ID}
+      AIRFLOW_ML_SERVICE_URL: ${AIRFLOW_ML_SERVICE_URL}
+      AIRFLOW_HDBSCAN_REBUILD_MODE: ${AIRFLOW_HDBSCAN_REBUILD_MODE}
+      AIRFLOW_HDBSCAN_PDF_MANIFEST: ${AIRFLOW_HDBSCAN_PDF_MANIFEST}
+      AIRFLOW_DEPLOY_CMD: ${AIRFLOW_DEPLOY_CMD}
+
+  airflow-init:
+    volumes:
+      - ../python_doc_service:/opt/airflow/python_doc_service
+    environment:
+      AIRFLOW__CORE__DAGS_FOLDER: /opt/airflow/python_doc_service/airflow/dags
+      AIRFLOW_ML_CLIENT_ID: ${AIRFLOW_ML_CLIENT_ID}
+      AIRFLOW_ML_BOT_ID: ${AIRFLOW_ML_BOT_ID}
+      AIRFLOW_ML_SERVICE_URL: ${AIRFLOW_ML_SERVICE_URL}
+      AIRFLOW_HDBSCAN_REBUILD_MODE: ${AIRFLOW_HDBSCAN_REBUILD_MODE}
+      AIRFLOW_HDBSCAN_PDF_MANIFEST: ${AIRFLOW_HDBSCAN_PDF_MANIFEST}
+      AIRFLOW_DEPLOY_CMD: ${AIRFLOW_DEPLOY_CMD}
+
+  airflow-cli:
+    volumes:
+      - ../python_doc_service:/opt/airflow/python_doc_service
+    environment:
+      AIRFLOW__CORE__DAGS_FOLDER: /opt/airflow/python_doc_service/airflow/dags
+      AIRFLOW_ML_CLIENT_ID: ${AIRFLOW_ML_CLIENT_ID}
+      AIRFLOW_ML_BOT_ID: ${AIRFLOW_ML_BOT_ID}
+      AIRFLOW_ML_SERVICE_URL: ${AIRFLOW_ML_SERVICE_URL}
+      AIRFLOW_HDBSCAN_REBUILD_MODE: ${AIRFLOW_HDBSCAN_REBUILD_MODE}
+      AIRFLOW_HDBSCAN_PDF_MANIFEST: ${AIRFLOW_HDBSCAN_PDF_MANIFEST}
+      AIRFLOW_DEPLOY_CMD: ${AIRFLOW_DEPLOY_CMD}

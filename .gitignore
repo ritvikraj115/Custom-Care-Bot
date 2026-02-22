@@ -1,0 +1,24 @@
+# Environment secrets
+.env
+.env.*
+!.env.example
+**/.env
+**/.env.*
+!**/.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Node
+**/node_modules/
+
+# Local runtime artifacts
+storage/
+infra/airflow_mlflow_stack/airflow/logs/
+airflow_local/logs/
+airflow_local/plugins/
+
+# DVC local credentials
+python_doc_service/.dvc/config.local

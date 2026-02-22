@@ -1,0 +1,41 @@
+stages:
+  cluster_train:
+    cmd: >-
+      python scripts/dvc/run_cluster_train.py
+      --client-id ${dvc.client_id}
+      --bot-id ${dvc.bot_id}
+      --rebuild-mode ${dvc.rebuild_mode}
+      --pdf-manifest ${dvc.pdf_manifest}
+      --summary-out storage/dvc_runs/client_${dvc.client_id}/bot_${dvc.bot_id}/clustering_summary.json
+    deps:
+      - scripts/dvc/run_cluster_train.py
+      - app/pipeline/run_pipeline.py
+      - app/pipeline/clustering_pipeline.py
+      - app/pipeline/hierarchical_index.py
+      - ${dvc.pdf_manifest}
+    params:
+      - dvc.client_id
+      - dvc.bot_id
+      - dvc.rebuild_mode
+      - dvc.pdf_manifest
+    outs:
+      - storage/indexes/client_${dvc.client_id}/bot_${dvc.bot_id}
+      - storage/dvc_runs/client_${dvc.client_id}/bot_${dvc.bot_id}/clustering_summary.json
+
+  autocomplete_track:
+    cmd: >-
+      python scripts/dvc/track_autocomplete_artifacts.py
+      --client-id ${dvc.client_id}
+      --bot-id ${dvc.bot_id}
+      --summary-out storage/dvc_runs/client_${dvc.client_id}/bot_${dvc.bot_id}/autocomplete_tracking.json
+    deps:
+      - scripts/dvc/track_autocomplete_artifacts.py
+      - app/autocomplete_training_pipeline.py
+    params:
+      - dvc.client_id
+      - dvc.bot_id
+    outs:
+      - storage/autocomplete/client_${dvc.client_id}/bot_${dvc.bot_id}:
+          persist: true
+      - storage/dvc_runs/client_${dvc.client_id}/bot_${dvc.bot_id}/autocomplete_tracking.json
+    always_changed: true

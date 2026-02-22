@@ -1,0 +1,8 @@
+CREATE USER airflow WITH PASSWORD 'airflow';
+CREATE DATABASE airflow OWNER airflow;
+
+CREATE USER mlflow WITH PASSWORD 'mlflow';
+CREATE DATABASE mlflow OWNER mlflow;
+
+GRANT ALL PRIVILEGES ON DATABASE airflow TO airflow;
+GRANT ALL PRIVILEGES ON DATABASE mlflow TO mlflow;

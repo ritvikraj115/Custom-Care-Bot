@@ -1,0 +1,15 @@
+{
+  "total_questions": 0,
+  "total_seed_questions": 150,
+  "total_corpus_questions": 150,
+  "bootstrap_completed": true,
+  "last_trained_count": 0,
+  "last_trained_user_count": 0,
+  "last_trained_corpus_count": 150,
+  "model_version": 1,
+  "is_training": false,
+  "last_trained_at": "2026-02-21T09:00:15.669418+00:00",
+  "last_training_seconds": 142.578,
+  "last_error": null,
+  "updated_at": "2026-02-21T09:00:15.669418+00:00"
+}
