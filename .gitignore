@@ -16,9 +16,15 @@ __pycache__/
 
 # Local runtime artifacts
 storage/
+**/storage/
 infra/airflow_mlflow_stack/airflow/logs/
 airflow_local/logs/
 airflow_local/plugins/
 
 # DVC local credentials
 python_doc_service/.dvc/config.local
+
+# DVC/local runtime artifacts (never commit)
+python_doc_service/.dvc/cache/
+python_doc_service/.dvc/tmp/
+python_doc_service/data/dvc/runtime/
