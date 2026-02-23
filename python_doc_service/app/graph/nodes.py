@@ -752,7 +752,7 @@ def make_primary_retrieval_node(embedder):
             top_chunks=top_k,
             precomputed_embedding=state.get("query_embedding"),
             source_filter=state.get("doc_scope"),
-            enable_doc_bm25=False,
+            enable_doc_bm25=True,
             enable_social_bm25=True
         )
         compression = ContextualCompressionRetriever(

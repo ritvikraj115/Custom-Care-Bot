@@ -269,16 +269,79 @@ def query_hierarchical(
 
     cluster_key = (client_id, bot_id)
 
-    if cluster_key not in CLUSTER_INDEX:
+    allowed_sources = None
+    if source_filter:
+        if isinstance(source_filter, (list, tuple, set)):
+            allowed_sources = {str(s) for s in source_filter}
+        else:
+            allowed_sources = {str(source_filter)}
+
+    def _bm25_only_fallback(reason: str) -> list[dict]:
+        if not query_text or not es_is_enabled() or not enable_bm25:
+            record_hdbscan_query_event(
+                client_id=client_id,
+                bot_id=bot_id,
+                final_hits=0,
+                semantic_hits=0,
+                candidate_clusters=0,
+                reason=reason,
+            )
+            return []
+
+        bm25_results = search_bm25_chunks(
+            query_text=query_text,
+            client_id=client_id,
+            bot_id=bot_id,
+            top_k=max(6, int(top_chunks) * max(1, int(top_clusters))),
+            source_filter=allowed_sources,
+            cluster_filter=None,
+        )
+        if not bm25_results:
+            record_hdbscan_query_event(
+                client_id=client_id,
+                bot_id=bot_id,
+                final_hits=0,
+                semantic_hits=0,
+                candidate_clusters=0,
+                reason=f"{reason}_bm25_empty",
+            )
+            return []
+
+        out: list[dict] = []
+        for row in bm25_results:
+            out.append(
+                {
+                    "text": row.get("text", ""),
+                    "topic": row.get("topic"),
+                    "cluster": row.get("cluster"),
+                    "chunk_index": int(row.get("chunk_index", 0) or 0),
+                    "chunk_ref": row.get("chunk_ref"),
+                    "score": float(row.get("score", 0.0) or 0.0),
+                    "semantic_score": 0.0,
+                    "source_type": row.get("source_type"),
+                    "source_url": row.get("source_url"),
+                    "pdf": row.get("pdf"),
+                }
+            )
         record_hdbscan_query_event(
             client_id=client_id,
             bot_id=bot_id,
-            final_hits=0,
+            final_hits=len(out),
             semantic_hits=0,
             candidate_clusters=0,
-            reason="no_cluster_index",
+            reason=f"{reason}_bm25_fallback",
         )
-        return []
+        log.debug(
+            "Retrieval summary | client_id=%s | bot_id=%s | semantic_hits=0 | bm25_hits=%d | mode=bm25_only_fallback | reason=%s",
+            client_id,
+            bot_id,
+            len(out),
+            reason,
+        )
+        return out
+
+    if cluster_key not in CLUSTER_INDEX:
+        return _bm25_only_fallback("no_cluster_index")
 
     # normalize query for cosine similarity
     denom = float(np.linalg.norm(query_embedding))
@@ -302,15 +365,7 @@ def query_hierarchical(
 
     k = min(top_clusters, cluster_index.ntotal)
     if k <= 0:
-        record_hdbscan_query_event(
-            client_id=client_id,
-            bot_id=bot_id,
-            final_hits=0,
-            semantic_hits=0,
-            candidate_clusters=0,
-            reason="empty_cluster_index",
-        )
-        return []
+        return _bm25_only_fallback("empty_cluster_index")
 
     D, I = cluster_index.search(
         np.asarray([query_embedding], dtype="float32"),
@@ -327,13 +382,6 @@ def query_hierarchical(
     # STEP 2: CHUNK RETRIEVAL INSIDE CLUSTERS
     # --------------------------------------------------
     semantic_results = []
-
-    allowed_sources = None
-    if source_filter:
-        if isinstance(source_filter, (list, tuple, set)):
-            allowed_sources = {str(s) for s in source_filter}
-        else:
-            allowed_sources = {str(source_filter)}
 
     for cluster_id in candidate_clusters:
         chunk_key = (client_id, bot_id, cluster_id)
