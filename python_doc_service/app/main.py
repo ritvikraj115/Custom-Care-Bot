@@ -575,6 +575,29 @@ async def process_pdfs(
         )
         if bool(dvc_result.get("ok", False)):
             pipeline_summary = dvc_result.get("summary", {}) or {}
+            try:
+                stats = load_all_indexes()
+                logging.info(
+                    "Reloaded hierarchical indexes after DVC run | bots=%d | chunk_partitions=%d",
+                    int((stats or {}).get("bots_loaded", 0)),
+                    int((stats or {}).get("chunk_partitions_loaded", 0)),
+                )
+            except Exception as load_err:
+                logging.warning("Post-DVC index reload failed: %s", load_err)
+            if pipeline_summary:
+                logging.info(
+                    (
+                        "DVC pipeline summary | client_id=%s | bot_id=%s | "
+                        "pdfs=%s | doc_chunks=%s | website_chunks=%s | total_chunks=%s | clusters=%s"
+                    ),
+                    client_id,
+                    bot_id,
+                    int(pipeline_summary.get("pdfs_processed", 0) or 0),
+                    int(pipeline_summary.get("doc_chunks", 0) or 0),
+                    int(pipeline_summary.get("website_chunks", 0) or 0),
+                    int(pipeline_summary.get("total_chunks", 0) or 0),
+                    int(pipeline_summary.get("clusters", 0) or 0),
+                )
             hdbscan_dvc = {
                 "triggered": True,
                 "ok": True,
@@ -669,6 +692,13 @@ async def process_pdfs(
     return {
         "status": "processing_completed",
         "pdfs_processed": len(pdf_paths),
+        "ingest_summary": {
+            "doc_chunks": int((pipeline_summary or {}).get("doc_chunks", 0) or 0),
+            "website_chunks": int((pipeline_summary or {}).get("website_chunks", 0) or 0),
+            "total_chunks": int((pipeline_summary or {}).get("total_chunks", 0) or 0),
+            "clusters": int((pipeline_summary or {}).get("clusters", 0) or 0),
+            "rebuild_mode": str((pipeline_summary or {}).get("rebuild_mode", rebuild_mode)),
+        },
         "autocomplete_bootstrap": bootstrap_info,
         "hdbscan_dvc": hdbscan_dvc,
         "hdbscan_airflow": hdbscan_airflow,
@@ -693,6 +723,15 @@ def hdbscan_train(req: HdbscanTrainRequest):
                 status_code=500,
                 detail=str(result.get("error", "cluster_train_failed")),
             )
+        try:
+            stats = load_all_indexes()
+            logging.info(
+                "Reloaded hierarchical indexes after /hdbscan/train | bots=%d | chunk_partitions=%d",
+                int((stats or {}).get("bots_loaded", 0)),
+                int((stats or {}).get("chunk_partitions_loaded", 0)),
+            )
+        except Exception as load_err:
+            logging.warning("Post-/hdbscan/train index reload failed: %s", load_err)
         return {
             "triggered": True,
             "ok": True,

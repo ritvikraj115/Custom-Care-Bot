@@ -101,8 +101,8 @@ ES_API_KEY = str(os.getenv("ES_API_KEY", "")).strip()
 ES_VERIFY_CERTS = _env_bool("ES_VERIFY_CERTS", False)
 ES_CA_CERTS = str(os.getenv("ES_CA_CERTS", "")).strip() or None
 
-ES_REQUEST_TIMEOUT = max(0.15, _env_float("ES_REQUEST_TIMEOUT_SEC", 0.7))
-ES_PING_TIMEOUT = max(0.10, _env_float("ES_PING_TIMEOUT_SEC", 0.35))
+ES_REQUEST_TIMEOUT = max(1.0, _env_float("ES_REQUEST_TIMEOUT_SEC", 10.0))
+ES_PING_TIMEOUT = max(0.5, _env_float("ES_PING_TIMEOUT_SEC", 3.0))
 ES_COOLDOWN_SECONDS = max(5.0, _env_float("ES_COOLDOWN_SECONDS", 20.0))
 
 ES_CHUNK_INDEX = str(os.getenv("ES_CHUNK_INDEX", "bot_chunks_hybrid_v1")).strip()

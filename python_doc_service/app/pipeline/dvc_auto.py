@@ -131,6 +131,25 @@ def _run_dvc_command(args: list[str], cwd: Path, timeout_sec: int) -> tuple[int,
     return proc.returncode, (proc.stdout or "").strip(), (proc.stderr or "").strip()
 
 
+def _log_cmd_output(tag: str, stdout_text: str, stderr_text: str, *, max_lines: int = 300) -> None:
+    if stdout_text:
+        for idx, line in enumerate(str(stdout_text).splitlines()):
+            if idx >= max_lines:
+                log.info("%s stdout truncated | total_lines>%d", tag, max_lines)
+                break
+            clean = str(line).strip()
+            if clean:
+                log.info("%s stdout | %s", tag, clean[:1000])
+    if stderr_text:
+        for idx, line in enumerate(str(stderr_text).splitlines()):
+            if idx >= max_lines:
+                log.warning("%s stderr truncated | total_lines>%d", tag, max_lines)
+                break
+            clean = str(line).strip()
+            if clean:
+                log.warning("%s stderr | %s", tag, clean[:1000])
+
+
 def track_autocomplete_training(client_id: str, bot_id: str, model_version: int | None = None) -> None:
     if not _is_enabled():
         return
@@ -148,6 +167,7 @@ def track_autocomplete_training(client_id: str, bot_id: str, model_version: int 
             "autocomplete_track",
         ]
         rc, out, err = _run_dvc_command(cmd, cwd=root, timeout_sec=timeout_sec)
+        _log_cmd_output("dvc autocomplete_track", out, err, max_lines=120)
         if rc != 0:
             log.warning(
                 "DVC autocomplete tracking failed | client_id=%s | bot_id=%s | model_version=%s | rc=%s | err=%s",
@@ -223,7 +243,15 @@ def run_cluster_training(
             "repro",
             "cluster_train",
         ]
+        log.info(
+            "DVC cluster train start | client_id=%s | bot_id=%s | rebuild_mode=%s | pdf_manifest=%s",
+            client_id,
+            bot_id,
+            rebuild_mode,
+            pdf_manifest,
+        )
         rc, out, err = _run_dvc_command(cmd, cwd=root, timeout_sec=timeout_sec)
+        _log_cmd_output("dvc cluster_train", out, err, max_lines=400)
         if rc != 0:
             return {
                 "ok": False,
@@ -240,7 +268,21 @@ def run_cluster_training(
 
         if _is_push_enabled():
             push_cmd = [sys.executable, "-m", "dvc", "push"]
-            _run_dvc_command(push_cmd, cwd=root, timeout_sec=timeout_sec)
+            prc, pout, perr = _run_dvc_command(push_cmd, cwd=root, timeout_sec=timeout_sec)
+            _log_cmd_output("dvc push", pout, perr, max_lines=80)
+            if prc != 0:
+                log.warning(
+                    "DVC push failed after cluster train | client_id=%s | bot_id=%s | rc=%s",
+                    client_id,
+                    bot_id,
+                    prc,
+                )
+        log.info(
+            "DVC cluster train complete | client_id=%s | bot_id=%s | summary_file=%s",
+            client_id,
+            bot_id,
+            str(summary_path),
+        )
 
         return {
             "ok": True,

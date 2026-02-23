@@ -52,9 +52,22 @@ def _preview_text(text: str, limit: int | None = None) -> str:
 
 _SKIP_EXTENSIONS = {
     ".jpg", ".jpeg", ".png", ".gif", ".webp", ".svg",
+    ".ico", ".woff", ".woff2", ".ttf", ".eot",
     ".pdf", ".zip", ".rar", ".7z", ".tar", ".gz",
     ".mp4", ".mp3", ".mov", ".avi", ".mkv",
     ".css", ".js", ".json", ".xml"
+}
+
+_SKIP_PATH_PARTS = {
+    "/login",
+    "/signin",
+    "/sign-in",
+    "/signup",
+    "/sign-up",
+    "/register",
+    "/account",
+    "/checkout",
+    "/cart",
 }
 
 
@@ -118,6 +131,8 @@ def _extract_links(html_text: str, base_url: str) -> List[str]:
 
         path = urllib.parse.urlparse(joined).path.lower()
         if any(path.endswith(ext) for ext in _SKIP_EXTENSIONS):
+            continue
+        if any(part in path for part in _SKIP_PATH_PARTS):
             continue
 
         output.append(_normalize_url(joined))
