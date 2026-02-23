@@ -4,8 +4,8 @@ import os
 from collections import defaultdict
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
+from sentence_transformers import SentenceTransformer
 from app.pipeline.logger import get_logger
-from app.pipeline.semantic_embedder import get_embedder
 
 log = get_logger("chunk")
 
@@ -19,11 +19,10 @@ def _load_nlp():
     model_name = str(os.getenv("SPACY_MODEL", "en_core_web_sm")).strip() or "en_core_web_sm"
     try:
         return spacy.load(model_name)
-    except Exception as err:
+    except Exception:
         log.warning(
-            "spaCy model unavailable; using lightweight sentencizer fallback | model=%s | err=%s",
+            "spaCy model unavailable; using sentencizer fallback | model=%s",
             model_name,
-            err,
         )
         nlp_fallback = spacy.blank("en")
         if "sentencizer" not in nlp_fallback.pipe_names:
@@ -32,7 +31,7 @@ def _load_nlp():
 
 
 nlp = _load_nlp()
-embedder = get_embedder()
+embedder = SentenceTransformer("all-MiniLM-L6-v2")
 
 # --------------------------------------------------
 # STEP 1: Extract all sentences globally

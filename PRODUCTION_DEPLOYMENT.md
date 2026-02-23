@@ -1,40 +1,157 @@
-# Render Deployment Modes
+# Single-VM Docker Deployment (Azure VM or AWS EC2)
 
-This repo now has two Render blueprints:
+This repo is simplified for one deployment method:
+- Run everything with Docker Compose from `infra/airflow_mlflow_stack`.
 
-1. `render.yaml` -> no-payment mode (free-tier friendly):
-- `adv-frontend` (static)
-- `adv-backend` (free web)
-- `adv-python-doc-service` (free web)
+Services included:
+- Frontend
+- Backend
+- Python doc service
+- Airflow API + scheduler + dag-processor
+- MLflow
+- Postgres (for Airflow + MLflow metadata)
 
-2. `render.paid.yaml` -> full stack mode (requires payment method):
-- Adds MLflow, Airflow API/scheduler/dag-processor, and Postgres DBs.
+## 1. Create Linux VM
 
-## Why Render asked for payment
+Use Ubuntu 22.04 LTS on either:
+- Azure Virtual Machine
+- AWS EC2 instance
 
-Your previous blueprint included paid-only components:
-- `type: pserv` private services
-- `type: worker`
-- managed Postgres databases
-- persistent disk
+Recommended minimum:
+- 4 vCPU
+- 16 GB RAM
+- 80+ GB disk
 
-So Render blocked deployment until billing info was added.
+Open inbound ports:
+- `22` (SSH)
+- `80` (frontend)
+- `5000` (backend optional direct access)
+- `8000` (python doc service optional direct access)
+- `8091` (Airflow)
+- `5001` (MLflow)
 
-## No-Pay Deploy Steps
+## 2. Install Docker + Compose Plugin
 
-1. In Render, create Blueprint using `render.yaml`.
-2. Add env vars in dashboard (do not commit secrets):
-- `adv-backend`: `MONGO_URI`, `JWT_SECRET`, `DOC_SERVICE_BASE_URL`
-- `adv-python-doc-service`: `GEMINI_API_KEY`, `ES_URLS`, `ES_API_KEY`, `AWS_DEFAULT_REGION`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`
-- `adv-frontend`: `REACT_APP_API_BASE_URL`
-3. Deploy `adv-python-doc-service`.
-4. Set backend `DOC_SERVICE_BASE_URL` to Python service URL and deploy backend.
-5. Set frontend `REACT_APP_API_BASE_URL` to backend `/api` URL and deploy frontend.
+Run on VM:
 
-## No-Pay Limitations
+```bash
+sudo apt-get update
+sudo apt-get install -y ca-certificates curl gnupg
+sudo install -m 0755 -d /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+sudo chmod a+r /etc/apt/keyrings/docker.gpg
+echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+  $(. /etc/os-release && echo $VERSION_CODENAME) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+sudo apt-get update
+sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+sudo usermod -aG docker $USER
+newgrp docker
+```
 
-1. Airflow and MLflow are disabled in `render.yaml`.
-2. No persistent disk for Python service.
-3. Free web services can sleep and cold-start.
+## 3. Clone Repo
 
-If you later decide to enable full MLOps, switch to `render.paid.yaml`.
+```bash
+git clone <your-repo-url> adv_project
+cd adv_project
+```
+
+## 4. Configure Environment
+
+```bash
+cd infra/airflow_mlflow_stack
+cp .env.example .env
+```
+
+Edit `.env` and fill required values:
+- `MONGO_URI`
+- `JWT_SECRET`
+- `GEMINI_API_KEY`
+- `ES_URLS`
+- `ES_API_KEY`
+- `AWS_ACCESS_KEY_ID`
+- `AWS_SECRET_ACCESS_KEY`
+- `AIRFLOW_FERNET_KEY`
+- `AIRFLOW_ADMIN_PASSWORD`
+
+Generate `AIRFLOW_FERNET_KEY`:
+
+```bash
+docker run --rm apache/airflow:3.1.7 python - <<'PY'
+from cryptography.fernet import Fernet
+print(Fernet.generate_key().decode())
+PY
+```
+
+## 5. Deploy All Services
+
+From `infra/airflow_mlflow_stack`:
+
+```bash
+docker compose up -d --build
+```
+
+Check status:
+
+```bash
+docker compose ps
+```
+
+Check logs:
+
+```bash
+docker compose logs -f --tail=150
+```
+
+## 6. Verify Endpoints
+
+- Frontend: `http://<VM_PUBLIC_IP>:80`
+- Backend: `http://<VM_PUBLIC_IP>:5000`
+- Python API docs: `http://<VM_PUBLIC_IP>:8000/docs`
+- Airflow: `http://<VM_PUBLIC_IP>:8091`
+- MLflow: `http://<VM_PUBLIC_IP>:5001`
+
+Run stack smoke test:
+
+```bash
+chmod +x smoke-test.sh
+./smoke-test.sh
+```
+
+## 7. DVC One-Time Setup in Python Container
+
+Run once:
+
+```bash
+docker compose exec python-doc-service python -m dvc remote remove localstore || true
+docker compose exec python-doc-service python -m dvc remote add -d prod s3://dvc-customcare/adv_project/dvc || true
+docker compose exec python-doc-service python -m dvc remote modify prod region us-west-2
+docker compose exec python-doc-service python -m dvc push
+```
+
+## 8. Operations
+
+Restart one service:
+
+```bash
+docker compose restart python-doc-service
+```
+
+Update code and redeploy:
+
+```bash
+git pull
+docker compose up -d --build
+```
+
+Stop stack:
+
+```bash
+docker compose down
+```
+
+Delete all volumes/data:
+
+```bash
+docker compose down -v
+```

@@ -6,5 +6,4 @@
 **/*.pyc
 **/node_modules
 storage
-airflow_local
 infra/airflow_mlflow_stack/airflow/logs

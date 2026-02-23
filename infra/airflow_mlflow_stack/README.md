@@ -1,77 +1,75 @@
-# Airflow + MLflow Docker Stack (Isolated)
+# All-in-One Docker Stack (VM: Azure or EC2)
 
-This is a separate stack from `airflow_local/` and can run independently.
+This folder now contains one production stack for a single Linux VM:
 
-Services:
-- `postgres` (shared by Airflow + MLflow)
-- `airflow-apiserver` (Airflow API/UI on `:8091` by default)
+- `frontend` (React + Nginx)
+- `backend` (Node/Express)
+- `python-doc-service` (FastAPI)
+- `postgres` (Airflow + MLflow metadata)
+- `mlflow`
+- `airflow-apiserver`
 - `airflow-scheduler`
 - `airflow-dag-processor`
-- `mlflow` (MLflow tracking server on `:5001` by default)
 
-Airflow image stays lightweight:
-- uses official `apache/airflow:3.1.7`
-- no custom heavy ML dependencies are installed in Airflow
+## 1. Prepare `.env`
 
-## 1. Configure
-
-```powershell
+```bash
 cd infra/airflow_mlflow_stack
-Copy-Item .env.example .env
+cp .env.example .env
 ```
 
-Edit `.env`:
-- Set `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`.
-- Keep `MLFLOW_S3_BUCKET=mlflow-custom-care`.
-- Keep `DVC_S3_BUCKET=dvc-customcare` (used by your app-side DVC commands).
-- Set Airflow admin credentials.
-- Optional: set `AIRFLOW_ML_SERVICE_URL` to your python doc service URL.
+Set required values in `.env`:
+- `MONGO_URI`
+- `JWT_SECRET`
+- `GEMINI_API_KEY`
+- `ES_URLS`
+- `ES_API_KEY`
+- `AWS_ACCESS_KEY_ID`
+- `AWS_SECRET_ACCESS_KEY`
+- `AIRFLOW_FERNET_KEY` (required)
+- `AIRFLOW_ADMIN_PASSWORD` (change default)
 
-## 2. Start
+Generate fernet key (once):
 
-```powershell
+```bash
+docker run --rm apache/airflow:3.1.7 python - <<'PY'
+from cryptography.fernet import Fernet
+print(Fernet.generate_key().decode())
+PY
+```
+
+## 2. Start Everything
+
+```bash
 docker compose up -d --build
 ```
 
-## 3. Access
+## 3. Access Services
 
-- Airflow API/UI: `http://localhost:8081`
-- Airflow API/UI: `http://localhost:8091`
-- MLflow: `http://localhost:5001`
+- Frontend: `http://<vm-public-ip>:80`
+- Backend API: `http://<vm-public-ip>:5000`
+- Python docs API: `http://<vm-public-ip>:8000/docs`
+- Airflow API/UI: `http://<vm-public-ip>:8091`
+- MLflow: `http://<vm-public-ip>:5001`
 
-## 4. Wire Into Your App
+## 4. Smoke Test
 
-Set these in `python_doc_service` runtime environment:
-- `AIRFLOW_AUTOTRIGGER_ENABLED=true`
-- `AIRFLOW_API_BASE_URL=http://localhost:8091`
-- `AIRFLOW_API_USERNAME=<airflow-admin-username>`
-- `AIRFLOW_API_PASSWORD=<airflow-admin-password>`
-- `MLFLOW_ENABLED=true`
-- `MLFLOW_TRACKING_URI=http://localhost:5001`
-- `ES_URLS=https://my-elasticsearch-project-ab7db2.es.us-central1.gcp.elastic.cloud:443`
-- `ES_API_KEY=<your elastic api key>`
+Run after startup:
 
-## 5. DVC Bucket Setup Command
-
-Run in `python_doc_service`:
-
-```powershell
-python -m dvc remote remove localstore
-python -m dvc remote add -d prod s3://dvc-customcare/adv_project/dvc
-python -m dvc remote modify prod region us-west-2
-python -m dvc remote modify --local prod access_key_id <AWS_ACCESS_KEY_ID>
-python -m dvc remote modify --local prod secret_access_key <AWS_SECRET_ACCESS_KEY>
-python -m dvc push
+```bash
+chmod +x smoke-test.sh
+./smoke-test.sh
 ```
 
-## 6. Stop
+## 5. Stop / Restart
 
-```powershell
+```bash
 docker compose down
+docker compose up -d
 ```
 
-To reset postgres data:
+Reset all persistent data:
 
-```powershell
+```bash
 docker compose down -v
 ```

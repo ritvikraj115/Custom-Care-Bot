@@ -18,8 +18,6 @@ __pycache__/
 storage/
 **/storage/
 infra/airflow_mlflow_stack/airflow/logs/
-airflow_local/logs/
-airflow_local/plugins/
 
 # DVC local credentials
 python_doc_service/.dvc/config.local

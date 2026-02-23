@@ -10,11 +10,10 @@ def _load_nlp():
     model_name = str(os.getenv("SPACY_MODEL", "en_core_web_sm")).strip() or "en_core_web_sm"
     try:
         return spacy.load(model_name)
-    except Exception as err:
+    except Exception:
         log.warning(
-            "spaCy model unavailable; using lightweight sentencizer fallback | model=%s | err=%s",
+            "spaCy model unavailable; using sentencizer fallback | model=%s",
             model_name,
-            err,
         )
         nlp_fallback = spacy.blank("en")
         if "sentencizer" not in nlp_fallback.pipe_names:
