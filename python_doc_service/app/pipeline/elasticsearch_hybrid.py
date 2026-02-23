@@ -222,10 +222,8 @@ def _ensure_chunk_index(client: Any) -> bool:
         return True
 
     body = {
-        "settings": {
-            "number_of_shards": 1,
-            "number_of_replicas": 0,
-        },
+        # Keep index creation serverless-compatible: serverless Elasticsearch
+        # rejects explicit shard/replica settings.
         "mappings": {
             "properties": {
                 "client_id": {"type": "keyword"},
@@ -260,10 +258,8 @@ def _ensure_question_index(client: Any) -> bool:
         return True
 
     body = {
-        "settings": {
-            "number_of_shards": 1,
-            "number_of_replicas": 0,
-        },
+        # Keep index creation serverless-compatible: serverless Elasticsearch
+        # rejects explicit shard/replica settings.
         "mappings": {
             "properties": {
                 "client_id": {"type": "keyword"},
