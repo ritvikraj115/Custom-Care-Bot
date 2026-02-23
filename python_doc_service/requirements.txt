@@ -4,7 +4,6 @@ python-multipart
 pymupdf
 spacy
 nltk
-sentence-transformers
 scikit-learn
 umap-learn
 hdbscan
@@ -18,8 +17,6 @@ langchain-core==1.2.9
 langchain-community==0.3.31
 langgraph==1.0.7
 python-dotenv
-transformers
-torch
 google-genai
 playwright
 trafilatura

@@ -1,9 +1,9 @@
-from sentence_transformers import SentenceTransformer
 from app.pipeline.logger import get_logger
+from app.pipeline.semantic_embedder import get_embedder
 log = get_logger("embed")
 
 
-model = SentenceTransformer("all-MiniLM-L6-v2")
+model = get_embedder()
 
 def embed_chunks(chunks):
     texts = [c["text"] for c in chunks]

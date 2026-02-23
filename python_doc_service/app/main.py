@@ -17,7 +17,6 @@ try:
 except Exception:
     pass
 
-from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
 
 from app.pipeline.run_pipeline import run_pipeline
@@ -39,6 +38,7 @@ from app.pipeline.vector_store import (
     search_experience,
     update_experience_feedback
 )
+from app.pipeline.semantic_embedder import get_embedder
 from pydantic import BaseModel
 class AnswerRequest(BaseModel):
     query: str
@@ -149,7 +149,7 @@ os.makedirs(RUNTIME_DVC_ROOT, exist_ok=True)
 # Models
 # --------------------------------------------------
 
-embedder = SentenceTransformer("all-MiniLM-L6-v2")
+embedder = get_embedder()
 autocomplete_manager = get_autocomplete_manager()
 if hasattr(autocomplete_manager, "set_semantic_embedder"):
     autocomplete_manager.set_semantic_embedder(embedder)

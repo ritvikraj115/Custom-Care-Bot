@@ -4,8 +4,8 @@ import os
 from collections import defaultdict
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
-from sentence_transformers import SentenceTransformer
 from app.pipeline.logger import get_logger
+from app.pipeline.semantic_embedder import get_embedder
 
 log = get_logger("chunk")
 
@@ -32,7 +32,7 @@ def _load_nlp():
 
 
 nlp = _load_nlp()
-embedder = SentenceTransformer("all-MiniLM-L6-v2")
+embedder = get_embedder()
 
 # --------------------------------------------------
 # STEP 1: Extract all sentences globally

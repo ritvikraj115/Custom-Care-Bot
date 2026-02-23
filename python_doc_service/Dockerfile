@@ -18,7 +18,6 @@ RUN pip install --upgrade pip \
     && pip install -r requirements.txt \
     && pip install -r requirements-dvc.txt \
     && (python -m spacy download en_core_web_sm || true) \
-    && (python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('all-MiniLM-L6-v2')" || true) \
     && python -m playwright install --with-deps chromium
 
 COPY . .
