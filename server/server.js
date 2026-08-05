@@ -15,9 +15,18 @@ dotenv.config();
 const app = express();
 
 // middleware
-app.use(cors());
+const allowedOrigins = (process.env.CORS_ORIGIN || "")
+  .split(",")
+  .map(origin => origin.trim())
+  .filter(Boolean);
+
+app.use(cors(allowedOrigins.length ? { origin: allowedOrigins } : undefined));
 app.use(express.json());
 app.disable("etag");
+
+app.get("/api/health", (req, res) => {
+  res.json({ status: "ok", service: "custom-care-backend", timestamp: Date.now() });
+});
 
 // routes
 app.use("/api/auth", authRoutes);

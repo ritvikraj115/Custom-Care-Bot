@@ -168,6 +168,15 @@ def startup_load_indexes():
         logging.exception("Failed to load persisted indexes: %s", err)
 
 
+@app.get("/health")
+def health():
+    return {
+        "status": "ok",
+        "service": "custom-care-doc-service",
+        "timestamp": int(time.time() * 1000)
+    }
+
+
 def _extract_json_block(text: str) -> dict | None:
     raw = (text or "").strip()
     if not raw:

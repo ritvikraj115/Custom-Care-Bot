@@ -1,0 +1,41 @@
+name: Deploy Python Doc Service to Azure Container Apps
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - python_doc_service/**
+      - .github/workflows/deploy-azure-doc-service.yml
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Build image and deploy container app
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Azure login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Login to Azure Container Registry
+        run: az acr login --name "${{ vars.AZURE_CONTAINER_REGISTRY }}"
+
+      - name: Build and push image
+        run: |
+          IMAGE="${{ vars.AZURE_CONTAINER_REGISTRY }}.azurecr.io/custom-care-doc-service:${{ github.sha }}"
+          docker build -t "$IMAGE" ./python_doc_service
+          docker push "$IMAGE"
+          echo "IMAGE=$IMAGE" >> "$GITHUB_ENV"
+
+      - name: Deploy image to Container Apps
+        run: |
+          az containerapp update \
+            --name "${{ vars.AZURE_DOC_CONTAINER_APP_NAME }}" \
+            --resource-group "${{ vars.AZURE_RESOURCE_GROUP }}" \
+            --image "$IMAGE"
